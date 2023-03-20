@@ -90,15 +90,21 @@
 </head>
 
 <body>
-	<h1>Yes Master!</h1>
+	<h1>Yes Sir!</h1>
 	<div class="container">
 		<textarea id="input-text" class="textarea" placeholder="Enter text here..."></textarea>
 		<button id="submit-btn" class="btn">Your wish is my command</button>
 		<div id="output" class="output"></div>
-
+		<div id="timer" style="text-align:center;margin-top:10px;font-size:18px;color:#fff;"></div>
+		<!-- Added timer div -->
 		<script>
+			var startTime; // Declare start time variable
+			var timerInterval; // Declare timer interval variable
+			
 			$(document).ready(function () {
+				var xhr=null;
 				$("#submit-btn").click(function () {
+					startTime = performance.now(); // Set start time when submit button is clicked
 					var inputData = $("#input-text").val();
 					var data = JSON.stringify({
 						"input": inputData
@@ -113,19 +119,27 @@
 							var content = response.replace(/\n/g, "<br>");
 							$("#output").html("<p>" + content + "</p>");
 							addCopyButton();
+							clearInterval(timerInterval); // Stop the timer interval
 						},
 						error: function (xhr, status, error) {
-							$("#output").html("<p>Error: " + error + " (" + xhr.status + " " + xhr.statusText + ")</p>");
+							$("#output").html("<p>Error: " + error + " (" + xhr.status + ")</p>");
+							clearInterval(timerInterval); // Stop the timer interval
 						}
 					});
+					timerInterval = setInterval(function () { // Start the timer interval
+						var elapsedTime = performance.now() - startTime;
+						var seconds = Math.floor(elapsedTime / 1000);
+						var millis = Math.floor((elapsedTime % 1) * 100);
+						$("#timer").text("Elapsed Time: " + seconds + "." + millis + " s");
+					}, 33); // Update the timer every 10 milliseconds
+				
 				});
 			});
-
 			function addCopyButton() {
-				$("<button class='copy-btn'>Copy</button>").appendTo("#output");
+				var copyText = $("#output").text();
+				$("#output").append("<button class='copy-btn'>Copy</button>");
 				$(".copy-btn").click(function () {
-					var content = $("#output p").text();
-					copyToClipboard(content);
+					copyToClipboard(copyText);
 				});
 			}
 
